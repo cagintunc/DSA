@@ -82,6 +82,23 @@ class RNN:
                     self.b4 = self.clip(self.b4 - learning_rate * dydb4)
 
             print(f"Epoch {epoch + 1} - Loss {np.sqrt(loss)}")
+        
+    def predict(self, X):
+        y = []
+        x1_c, x2_c = X
+        for i in range(len(x1_c)):
+            x1, x2 = x1_c[i], x2_c[i]
+            f1_input = self.w1 * x1 + self.b1
+            f1 = self.relu(f1_input)
+            f2_input = self.w3 * x2 + self.b3 + f1 * self.w2 + self.b2
+            f2 = self.relu(f2_input)
+            y_pred = f2 * self.w4 + self.b4
+            if y_pred < 0.5:
+                y_pred = 0
+            else:
+                y_pred = 1
+            y.append(y_pred)
+        return y
             
 
 def get_sample(number_of_sample):
@@ -100,10 +117,22 @@ def get_sample(number_of_sample):
 
     return [X1, X2, y_c]
 
+
 x1, x2, y = get_sample(20000)
-print(y)
 rnn = RNN()
 rnn.fit(X=[x1,x2], y=y, batch_size=10, epochs=50)
+
+test_x1, test_x2, test_y = get_sample(5000)
+y_pred = rnn.predict(X=[test_x1, test_x2])
+
+summ = 0
+for i in range(len(y_pred)):
+    if y_pred[i] == test_y[i]:
+        summ += 1
+
+print(f"\nAccuracy: {summ/len(y_pred)}") #0.96 accuracy
+
+
 
 
 
